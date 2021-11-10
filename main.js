@@ -34,6 +34,7 @@ import JSONComponent from './src/components/Json';
         engine.register(c);
     });
 
+  /*
     var n1 = await components[0].createNode({num: 2});
     var n2 = await components[0].createNode({num: 0});
     var add = await components[1].createNode();
@@ -49,6 +50,7 @@ import JSONComponent from './src/components/Json';
 
     editor.connect(n1.outputs.get('num'), add.inputs.get('num'));
     editor.connect(n2.outputs.get('num'), add.inputs.get('num2'));
+    */
 
 
     editor.on('process nodecreated noderemoved connectioncreated connectionremoved', async () => {
