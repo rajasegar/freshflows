@@ -41,23 +41,17 @@ import { generate } from './src/plugins/code';
     engine.register(c);
   });
 
-  /*
-    var n1 = await components[0].createNode({num: 2});
-    var n2 = await components[0].createNode({num: 0});
-    var add = await components[1].createNode();
+  var n1 = await new TicketReplyClick().createNode();
 
-    n1.position = [80, 200];
-    n2.position = [80, 400];
-    add.position = [500, 240];
- 
+  var n2 = await new ShowDialogComponent().createNode();
 
-    editor.addNode(n1);
-    editor.addNode(n2);
-    editor.addNode(add);
+  n1.position = [80, 200];
+  n2.position = [400, 200];
 
-    editor.connect(n1.outputs.get('num'), add.inputs.get('num'));
-    editor.connect(n2.outputs.get('num'), add.inputs.get('num2'));
-    */
+  editor.addNode(n1);
+  editor.addNode(n2);
+
+  editor.connect(n1.outputs.get('out'), n2.inputs.get('callback'));
 
   editor.on(
     'process nodecreated noderemoved connectioncreated connectionremoved',
