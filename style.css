@@ -16,3 +16,6 @@ select, input {
   width: 170px;
 }
 
+.context-menu {
+  width: 200px;
+}

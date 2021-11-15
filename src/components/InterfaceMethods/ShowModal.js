@@ -1,9 +1,9 @@
 import functionSocket from '../../sockets/function';
 import TextControl from '../../controls/TextControl';
 
-export default class ShowDialog extends Rete.Component {
+export default class ShowModal extends Rete.Component {
   constructor() {
-    super('Show Dialog');
+    super('Show Modal');
     this.data.path = 2;
   }
 
@@ -35,16 +35,5 @@ export default class ShowDialog extends Rete.Component {
       .setValue(sum);
     outputs['num'] = sum;
     */
-  }
-
-  code(node, inputs, add) {
-    add(`client.interface.trigger("showModal", {
-  title: "Sample Modal",
-  template: "modal.html"
-}).then(function(data) {
-// data - success message
-}).catch(function(error) {
-// error - error object
-});`);
   }
 }
