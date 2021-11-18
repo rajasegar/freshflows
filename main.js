@@ -20,6 +20,8 @@ import ShowConfirm from './src/components/InterfaceMethods/ShowConfirm';
 // Event Methods
 import EventMethod from './src/components/EventMethod';
 
+import AppInit from './src/components/AppInitialized';
+
 import { generate } from './src/plugins/code';
 
 (async () => {
@@ -32,6 +34,9 @@ import { generate } from './src/plugins/code';
     new FetchComponent(),
     new AssocComponent(),
     new JSONComponent(),
+
+    // App lifecycle
+    new AppInit(),
 
     // Interface Methods
     new ShowModalComponent(),
@@ -82,12 +87,12 @@ import { generate } from './src/plugins/code';
     engine.register(c);
   });
 
-  var n1 = await new EventMethod('ticket.replyClick').createNode();
+  var n1 = await new AppInit().createNode();
 
   var n2 = await new ShowDialogComponent().createNode();
 
-  n1.position = [80, 200];
-  n2.position = [400, 200];
+  n1.position = [80, -100];
+  n2.position = [400, -100];
 
   editor.addNode(n1);
   editor.addNode(n2);
@@ -100,6 +105,8 @@ import { generate } from './src/plugins/code';
       await engine.abort();
       await engine.process(editor.toJSON());
       const sourceCode = await generate(engine, editor.toJSON());
+      const code$ = document.getElementById('txtCode');
+      code$.value = sourceCode;
       console.log(sourceCode);
     }
   );
