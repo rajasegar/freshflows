@@ -88,6 +88,7 @@ import { generate } from './src/plugins/code';
   });
 
   var n1 = await new AppInit().createNode();
+  n1.readOnly = true;
 
   var n2 = await new ShowDialogComponent().createNode();
 
@@ -97,7 +98,7 @@ import { generate } from './src/plugins/code';
   editor.addNode(n1);
   editor.addNode(n2);
 
-  editor.connect(n1.outputs.get('out'), n2.inputs.get('callback'));
+  editor.connect(n1.outputs.get('success'), n2.inputs.get('callback'));
 
   editor.on(
     'process nodecreated noderemoved connectioncreated connectionremoved',

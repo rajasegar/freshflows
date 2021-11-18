@@ -6,8 +6,9 @@ export default class AppInitialized extends Rete.Component {
   }
 
   builder(node) {
-    const out = new Rete.Output('out', 'Function', functionSocket);
-    return node.addOutput(out);
+    const outSuccess = new Rete.Output('success', 'Success', functionSocket);
+    const outErr = new Rete.Output('err', 'Error', functionSocket);
+    return node.addOutput(outSuccess).addOutput(outErr);
   }
 
   worker(node, inputs, outputs) {}
