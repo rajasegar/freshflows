@@ -12,9 +12,6 @@ export default class CloseModal extends Rete.Component {
     var outThen = new Rete.Output('then', 'Then', functionSocket);
     var outCatch = new Rete.Output('catch', 'Catch', functionSocket);
 
-    // inp1.addControl(new NumControl(this.editor, 'num'));
-    // inp2.addControl(new NumControl(this.editor, 'num2'));
-
     return node
       .addInput(inp1)
       .addControl(new TextControl(this.editor, 'title', true))

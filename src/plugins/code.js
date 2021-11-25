@@ -1,26 +1,29 @@
 function genCodeForOutputNodes(node, data) {
   let code = '';
   try {
-    const {
-      outputs: {
-        out: { connections },
-      },
-    } = node;
+    const { outputs } = node;
+    for (const out in outputs) {
+      const { connections } = outputs[out];
+      code += connections
+        .map((c) => {
+          const { node } = c;
+          const name = data.nodes[node].name;
+          switch (name) {
+            case 'Show Modal':
+            case 'Show Dialog':
+            case 'Show Confirm':
+            case 'Show Notifications':
+            case 'Navigate to Contact Details Page':
+            case 'Navigate to Ticket Details Page':
+              return genCodeInterfaceMethods(name, node, data);
 
-    code = connections
-      .map((c) => {
-        const { node } = c;
-        console.log(data.nodes[node].name);
-        return `client.interface.trigger("showModal", {
-  title: "Sample Modal",
-  template: "modal.html"
-}).then(function(data) {
-// data - success message
-}).catch(function(error) {
-// error - error object
-});`;
-      })
-      .join('\n');
+            default:
+              console.error('(gencodeforoutputnodes) Not handled: ', node.name);
+              return '';
+          }
+        })
+        .join('\n');
+    }
   } catch (e) {
     console.log(e);
   }
@@ -61,7 +64,7 @@ function genCodeInterfaceMethods(method, node, data) {
   const body = genCodeForOutputNodes(node, data);
   let opts = {};
   switch (method) {
-    case 'showModal':
+    case 'Show Modal':
       opts = {
         title: 'Sample Modal',
         template: 'modal.html',
@@ -69,24 +72,38 @@ function genCodeInterfaceMethods(method, node, data) {
       };
       break;
 
-    case 'showDialog':
+    case 'Show Dialog':
       opts = {
         title: 'Sample Dialog',
         template: 'dialog.html',
       };
       break;
 
-    case 'showConfirm':
+    case 'Show Confirm':
       opts = {
         title: 'Sample Confirm',
         message: 'Are you sure you want to close this ticket?',
       };
       break;
 
-    case 'showNotify':
+    case 'Show Notify':
       opts = {
         type: 'success',
         message: 'Sample notification',
+      };
+      break;
+
+    case 'Navigate to Contact Details Page':
+      opts = {
+        id: 'contact',
+        value: 1,
+      };
+      break;
+
+    case 'Navigate to Ticket Details Page':
+      opts = {
+        id: 'ticket',
+        value: 1,
       };
       break;
 
@@ -111,7 +128,6 @@ ${body}
 export async function generate(engine, data) {
   let code = '';
 
-  console.log(data);
   for (const key in data.nodes) {
     const node = data.nodes[key];
     console.log(node.name);
@@ -135,6 +151,8 @@ export async function generate(engine, data) {
       case 'Show Dialog':
       case 'Show Confirm':
       case 'Show Notifications':
+      case 'Navigate to Contact Details Page':
+      case 'Navigate to Ticket Details Page':
         code += genCodeInterfaceMethods(node.name, node, data);
         break;
 

@@ -108,7 +108,6 @@ import { generate } from './src/plugins/code';
       const sourceCode = await generate(engine, editor.toJSON());
       const code$ = document.getElementById('txtCode');
       code$.value = sourceCode;
-      console.log(sourceCode);
     }
   );
 
