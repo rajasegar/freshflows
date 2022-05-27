@@ -1,136 +1,130 @@
+import { print } from 'recast';
+
+import getAstForInterfaceMethod from './getAstForInterfaceMethod';
+import getAstForAppInit from './getAstForAppInit';
+import getAstForEvents from './getAstForEvents';
+
+import getShowDialogProperties from './getShowDialogProperties';
+import getShowModalProperties from './getShowModalProperties';
+import getShowConfirmProperties from './getShowConfirmProperties';
+import getShowNotifyProps from './getShowNotifyProps';
+import getNavigateTicketProps from './getNavigateTicketProps';
+import getNavigateContactProps from './getNavigateContactProps';
+
 function genCodeForOutputNodes(node, data) {
-  let code = '';
+  let nodes = [];
   try {
     const { outputs } = node;
     for (const out in outputs) {
       const { connections } = outputs[out];
-      code += connections
-        .map((c) => {
-          const { node } = c;
-          const name = data.nodes[node].name;
-          switch (name) {
-            case 'Show Modal':
-            case 'Show Dialog':
-            case 'Show Confirm':
-            case 'Show Notifications':
-            case 'Navigate to Contact Details Page':
-            case 'Navigate to Ticket Details Page':
-              return genCodeInterfaceMethods(name, node, data);
+      let temp = connections.map((c) => {
+        const { node } = c;
+        const name = data.nodes[node].name;
+        switch (name) {
+          case 'Show Modal':
+          case 'Show Dialog':
+          case 'Show Confirm':
+          case 'Show Notify':
+          case 'Navigate to Contact Details Page':
+          case 'Navigate to Ticket Details Page':
+            return genCodeInterfaceMethods(name, node, data);
 
-            default:
-              console.error('(gencodeforoutputnodes) Not handled: ', node.name);
-              return '';
-          }
-        })
-        .join('\n');
+          default:
+            console.error('(gencodeforoutputnodes) Not handled: ', node.name);
+            return '';
+        }
+      });
+      nodes.push(temp);
     }
   } catch (e) {
     console.log(e);
   }
 
-  return code;
+  return nodes;
 }
-
 function genCodeEventMethod(node, data) {
-  let str = '';
-  const body = genCodeForOutputNodes(node, data);
-  str = `client.events.on("${node.name}", (event) => {
-	${body}
-    });
-`;
-  return str;
+  const astNode = getAstForEvents(node.name);
+
+  const childNodes = genCodeForOutputNodes(node, data);
+  const body = astNode.expression.arguments[1].body.body;
+  childNodes.flat().forEach((n) => body.push(n));
+
+  return astNode;
 }
 
-function genCodeAppInit(node, data) {
-  let str = '';
-  const body = genCodeForOutputNodes(node, data);
-  str = `app.initialized().then(
-    function(client)
-    {
-${body}
-    },
-    function(error)
-    {
-      //If unsuccessful
-      console.log();
-    }
-  );
-`;
-  return str;
+function getAppInitCode(node, data) {
+  const astNode = getAstForAppInit();
+  const nodes = genCodeForOutputNodes(node, data);
+  const body = astNode.expression.arguments[0].body.body;
+  nodes.flat().forEach((node) => body.push(node));
+  return astNode;
 }
 
 function genCodeInterfaceMethods(method, node, data) {
-  let str = '';
-  const body = genCodeForOutputNodes(node, data);
-  let opts = {};
+  const astNode = getAstForInterfaceMethod(method);
+
+  const childNodes = genCodeForOutputNodes(node, data);
+  console.log(childNodes);
+  const body = astNode.expression.callee.object.arguments[0].body.body;
+  childNodes.flat().forEach((n) => body.push(n));
+
+  const _arguments = astNode.expression.callee.object.callee.object.arguments;
+
   switch (method) {
     case 'Show Modal':
-      opts = {
-        title: 'Sample Modal',
-        template: 'modal.html',
-        data: { name: 'James', email: 'James@freshdesk.com' },
-      };
+      _arguments.push(getShowModalProperties('Sample Modal', 'modal.html'));
       break;
 
     case 'Show Dialog':
-      opts = {
-        title: 'Sample Dialog',
-        template: 'dialog.html',
-      };
+      _arguments.push(getShowDialogProperties('Sample Dialog', 'dialog.html'));
+
       break;
 
     case 'Show Confirm':
-      opts = {
-        title: 'Sample Confirm',
-        message: 'Are you sure you want to close this ticket?',
-      };
+      _arguments.push(
+        getShowConfirmProperties(
+          'Sample Confirm',
+          'Are you sure you want to close this ticket?'
+        )
+      );
       break;
 
     case 'Show Notify':
-      opts = {
-        type: 'success',
-        message: 'Sample notification',
-      };
+      _arguments.push(getShowNotifyProps('success', 'Sample notification'));
       break;
 
     case 'Navigate to Contact Details Page':
-      opts = {
-        id: 'contact',
-        value: 1,
-      };
+      _arguments.push(getNavigateContactProps(1));
       break;
 
     case 'Navigate to Ticket Details Page':
-      opts = {
-        id: 'ticket',
-        value: 1,
-      };
+      _arguments.push(getNavigateTicketProps(1));
       break;
 
     default:
       console.log('unknown interface method');
   }
 
-  str = `
-client.interface.trigger("${method}", 
-${JSON.stringify(opts, null, 2)}
-).then(function(data) {
-// data - success message
-${body}
-}).catch(function(error) {
-// error - error object
-});
-`;
-
-  return str;
+  return astNode;
 }
 
 export async function generate(engine, data) {
-  let code = '';
+  let ast = {
+    program: {
+      type: 'Program',
+      body: [],
+      sourceType: 'script',
+      errors: [],
+    },
+    name: null,
+    type: 'File',
+    comments: null,
+  };
+
+  let body = ast.program.body;
 
   for (const key in data.nodes) {
     const node = data.nodes[key];
-    console.log(node.name);
     switch (node.name) {
       case 'ticket.replyClick':
       case 'ticket.sendReply':
@@ -140,26 +134,17 @@ export async function generate(engine, data) {
       case 'ticket.notesClick':
       case 'ticket.addNote':
       case 'ticket.closeTicketClick':
-        code += genCodeEventMethod(node, data);
+        body.push(genCodeEventMethod(node, data));
         break;
 
       case 'app.initialized()':
-        code += genCodeAppInit(node, data);
-        break;
-
-      case 'Show Modal':
-      case 'Show Dialog':
-      case 'Show Confirm':
-      case 'Show Notifications':
-      case 'Navigate to Contact Details Page':
-      case 'Navigate to Ticket Details Page':
-        code += genCodeInterfaceMethods(node.name, node, data);
+        body.push(getAppInitCode(node, data));
         break;
 
       default:
-        console.error('Not handled: ', node.name);
+        console.log('Not handled: ', node.name);
     }
   }
 
-  return code;
+  return print(ast).code;
 }

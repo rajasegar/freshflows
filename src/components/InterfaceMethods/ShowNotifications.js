@@ -3,7 +3,7 @@ import TextControl from '../../controls/TextControl';
 
 export default class ShowNotifications extends Rete.Component {
   constructor() {
-    super('Show Notifications');
+    super('Show Notify');
     this.data.path = 2;
   }
 
