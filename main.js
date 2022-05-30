@@ -48,21 +48,32 @@ import { generate } from './src/plugins/code';
     new NavigateToTicketDetailsPage(),
 
     // Events methods
-    new EventMethod('ticket.replyClick'),
-    new EventMethod('ticket.sendReply'),
-    new EventMethod('ticket.forwardClick'),
-    new EventMethod('ticket.conversationForward'),
-    new EventMethod('ticket.forward'),
-    new EventMethod('ticket.notesClick'),
-    new EventMethod('ticket.addNote'),
-    new EventMethod('ticket.closeTicketClick'),
-    new EventMethod('ticket.deleteTicketClick'),
-    new EventMethod('ticket.previousTicketClick'),
-    new EventMethod('ticket.nextTicketClick'),
-    new EventMethod('ticket.startTimer'),
-    new EventMethod('ticket.stopTimer'),
-    new EventMethod('ticket.updateTimer'),
-    new EventMethod('ticket.deleteTimer'),
+    new EventMethod('ticket.replyClick', 1),
+    new EventMethod('ticket.sendReply', 1),
+    new EventMethod('ticket.forwardClick', 1),
+    new EventMethod('ticket.conversationForward', 1),
+    new EventMethod('ticket.forward', 1),
+    new EventMethod('ticket.notesClick', 1),
+    new EventMethod('ticket.addNote', 1),
+    new EventMethod('ticket.closeTicketClick', 1),
+    new EventMethod('ticket.deleteTicketClick', 1),
+    new EventMethod('ticket.previousTicketClick', 1),
+    new EventMethod('ticket.nextTicketClick', 1),
+    new EventMethod('ticket.startTimer', 1),
+    new EventMethod('ticket.stopTimer', 1),
+    new EventMethod('ticket.updateTimer', 1),
+    new EventMethod('ticket.deleteTimer', 1),
+
+    // Global Method
+    new EventMethod('cti.triggerDialer', 3),
+
+    // Events methods - New Ticket Page
+
+    new EventMethod('ticket.priorityChanged', 4),
+    new EventMethod('ticket.statusChanged', 4),
+    new EventMethod('ticket.groupChanged', 4),
+    new EventMethod('ticket.agentChanged', 4),
+    new EventMethod('ticket.typeChanged', 4),
   ];
 
   var editor = new Rete.NodeEditor('demo@0.1.0', container);
@@ -71,10 +82,16 @@ import { generate } from './src/plugins/code';
   editor.use(ContextMenuPlugin.default, {
     allocate(component) {
       if (component.data.path == 1) {
-        return ['Event Methods'];
+        return ['Event Methods', 'Ticket Details Page'];
       }
       if (component.data.path == 2) {
         return ['Interface Methods'];
+      }
+      if (component.data.path == 3) {
+        return ['Event Methods', 'Global Method'];
+      }
+      if (component.data.path == 4) {
+        return ['Event Methods', 'New Ticket Page'];
       }
     },
   });
@@ -91,14 +108,18 @@ import { generate } from './src/plugins/code';
   n1.readOnly = true;
 
   var n2 = await new ShowDialogComponent().createNode();
+  const n3 = await new NavigateToTicketDetailsPage().createNode();
 
-  n1.position = [80, -100];
-  n2.position = [400, -100];
+  n1.position = [80, 100];
+  n2.position = [400, 100];
+  n3.position = [800, 100];
 
   editor.addNode(n1);
   editor.addNode(n2);
+  editor.addNode(n3);
 
   editor.connect(n1.outputs.get('success'), n2.inputs.get('callback'));
+  editor.connect(n2.outputs.get('then'), n3.inputs.get('callback'));
 
   editor.on(
     'process nodecreated noderemoved connectioncreated connectionremoved',
@@ -112,6 +133,6 @@ import { generate } from './src/plugins/code';
   );
 
   editor.view.resize();
-  AreaPlugin.zoomAt(editor);
+  //AreaPlugin.zoomAt(editor);
   editor.trigger('process');
 })();

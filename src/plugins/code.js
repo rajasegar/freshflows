@@ -20,6 +20,7 @@ function genCodeForOutputNodes(node, data) {
       let temp = connections.map((c) => {
         const { node } = c;
         const name = data.nodes[node].name;
+        const childNodes = genCodeForOutputNodes(data.nodes[node], data);
         switch (name) {
           case 'Show Modal':
           case 'Show Dialog':
@@ -27,7 +28,7 @@ function genCodeForOutputNodes(node, data) {
           case 'Show Notify':
           case 'Navigate to Contact Details Page':
           case 'Navigate to Ticket Details Page':
-            return genCodeInterfaceMethods(name, node, data);
+            return genCodeInterfaceMethods(name, node, data, childNodes);
 
           default:
             console.error('(gencodeforoutputnodes) Not handled: ', node.name);
@@ -60,11 +61,9 @@ function getAppInitCode(node, data) {
   return astNode;
 }
 
-function genCodeInterfaceMethods(method, node, data) {
+function genCodeInterfaceMethods(method, node, data, childNodes) {
   const astNode = getAstForInterfaceMethod(method);
 
-  const childNodes = genCodeForOutputNodes(node, data);
-  console.log(childNodes);
   const body = astNode.expression.callee.object.arguments[0].body.body;
   childNodes.flat().forEach((n) => body.push(n));
 

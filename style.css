@@ -20,10 +20,6 @@ select, input {
   width: 170px;
 }
 
-.context-menu {
-  width: 200px;
-}
-
 .container {
     display: grid;
     grid-template-columns: 3fr 1fr;
@@ -43,3 +39,4 @@ header {
     color: white;
     padding:.5em;
 }
+

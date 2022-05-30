@@ -1,9 +1,9 @@
 import functionSocket from '../sockets/function';
 
 export default class EventMethod extends Rete.Component {
-  constructor(name) {
+  constructor(name, path) {
     super(name);
-    this.data.path = 1;
+    this.data.path = path;
   }
 
   builder(node) {
